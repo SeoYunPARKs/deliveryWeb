@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { query } from "@/app/lib/db";
 import { won } from "@/app/lib/format";
+import { MenuList } from "@/app/components/MenuList";
 import type { Restaurant, Menu } from "@/app/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -49,23 +50,7 @@ export default async function RestaurantPage({
       </div>
 
       <h2 className="font-bold mt-6 mb-3">메뉴</h2>
-      <div className="space-y-2">
-        {menus.map((m) => (
-          <div
-            key={m.id}
-            className="bg-white rounded-lg border border-zinc-200 p-4 flex items-center justify-between gap-3"
-          >
-            <div className="flex gap-3 items-center min-w-0">
-              <div className="text-2xl shrink-0">{m.image_url ?? "🍽️"}</div>
-              <div className="min-w-0">
-                <p className="font-medium truncate">{m.name}</p>
-                <p className="text-xs text-zinc-500 line-clamp-1">{m.description}</p>
-                <p className="text-sm text-zinc-700 mt-0.5">{won(m.price)}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <MenuList restaurant={restaurant} menus={menus} />
     </div>
   );
 }

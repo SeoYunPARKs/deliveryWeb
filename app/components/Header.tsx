@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/components/AuthProvider";
+import { useCart } from "@/app/components/CartProvider";
 
 export function Header() {
   const { user, loading, setUser } = useAuth();
+  const { itemCount, hydrated } = useCart();
   const router = useRouter();
 
   async function handleLogout() {
@@ -22,8 +24,13 @@ export function Header() {
           🛵 맛나배달
         </Link>
         <nav className="flex items-center gap-2 sm:gap-3 text-sm">
-          <Link href="/cart" className="text-zinc-600 hover:text-zinc-900 px-2 py-1">
+          <Link href="/cart" className="relative text-zinc-600 hover:text-zinc-900 px-2 py-1">
             장바구니
+            {hydrated && itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-teal-600 text-white text-[10px] leading-none rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center">
+                {itemCount}
+              </span>
+            )}
           </Link>
           <Link href="/orders" className="text-zinc-600 hover:text-zinc-900 px-2 py-1">
             주문내역
