@@ -13,6 +13,8 @@ export default function NewRestaurantPage() {
     category: "치킨",
     description: "",
     imageUrl: "🍽️",
+    address: "",
+    areas: "",
     deliveryFee: "3000",
     minOrderAmount: "12000",
   });
@@ -81,6 +83,15 @@ export default function NewRestaurantPage() {
         <div>
           <label className="block text-sm text-zinc-600 mb-1">소개</label>
           <input value={form.description} onChange={(e) => set("description", e.target.value)} className={inputCls} placeholder="바삭한 후라이드 전문점" />
+        </div>
+        <div>
+          <label className="block text-sm text-zinc-600 mb-1">가게 주소</label>
+          <input value={form.address} onChange={(e) => set("address", e.target.value)} className={inputCls} placeholder="서울시 강남구 역삼동 123-1" />
+        </div>
+        <div>
+          <label className="block text-sm text-zinc-600 mb-1">배달 가능 지역 (동)</label>
+          <input value={form.areas} onChange={(e) => set("areas", e.target.value)} className={inputCls} placeholder="역삼동, 삼성동, 대치동" />
+          <p className="text-xs text-zinc-400 mt-1">쉼표(,)로 구분해 입력하세요. 손님은 자기 동네에 배달되는 가게만 보게 됩니다.</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>

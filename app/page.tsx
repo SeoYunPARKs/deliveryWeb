@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { query } from "@/app/lib/db";
 import { won } from "@/app/lib/format";
+import { HomeFilters } from "@/app/components/HomeFilters";
 import type { Restaurant } from "@/app/lib/types";
 
 // DB 를 매 요청마다 조회하므로 정적 프리렌더 대신 동적 렌더링
@@ -11,47 +12,51 @@ const CATEGORIES = ["전체", "치킨", "분식", "피자", "카페"];
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; dong?: string }>;
 }) {
-  const { category } = await searchParams;
-  const selected = category && category !== "전체" ? category : null;
+  const sp = await searchParams;
+  const selectedCategory = sp.category || "전체";
+  const selectedDong = sp.dong || "전체";
 
-  const restaurants = selected
-    ? await query<Restaurant>(
-        `SELECT id, name, category, description, image_url, delivery_fee, min_order_amount, rating::float AS rating
-         FROM restaurants WHERE category = $1 ORDER BY id`,
-        [selected],
-      )
-    : await query<Restaurant>(
-        `SELECT id, name, category, description, image_url, delivery_fee, min_order_amount, rating::float AS rating
-         FROM restaurants ORDER BY id`,
-      );
+  // 배달지역(동) 선택 목록
+  const dongRows = await query<{ dong: string }>(
+    "SELECT DISTINCT dong FROM restaurant_areas ORDER BY dong",
+  );
+  const dongs = dongRows.map((d) => d.dong);
+
+  // 조건부 필터 (카테고리 + 배달지역)
+  const params: unknown[] = [];
+  const conditions: string[] = [];
+  let join = "";
+  if (selectedDong !== "전체") {
+    join = "JOIN restaurant_areas a ON a.restaurant_id = r.id";
+    params.push(selectedDong);
+    conditions.push(`a.dong = $${params.length}`);
+  }
+  if (selectedCategory !== "전체") {
+    params.push(selectedCategory);
+    conditions.push(`r.category = $${params.length}`);
+  }
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const restaurants = await query<Restaurant>(
+    `SELECT DISTINCT r.id, r.name, r.category, r.description, r.image_url,
+            r.delivery_fee, r.min_order_amount, r.rating::float AS rating
+     FROM restaurants r ${join} ${where} ORDER BY r.id`,
+    params,
+  );
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-1">맛집 둘러보기</h1>
       <p className="text-zinc-500 text-sm mb-5">먹고 싶은 메뉴를 골라 주문해 보세요.</p>
 
-      {/* 카테고리 필터 (가산 기능) */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {CATEGORIES.map((c) => {
-          const active = (selected ?? "전체") === c;
-          const href = c === "전체" ? "/" : `/?category=${encodeURIComponent(c)}`;
-          return (
-            <Link
-              key={c}
-              href={href}
-              className={
-                active
-                  ? "rounded-full bg-teal-600 text-white text-sm px-4 py-1.5"
-                  : "rounded-full bg-white border border-zinc-200 text-zinc-600 text-sm px-4 py-1.5 hover:bg-zinc-50"
-              }
-            >
-              {c}
-            </Link>
-          );
-        })}
-      </div>
+      <HomeFilters
+        categories={CATEGORIES}
+        dongs={dongs}
+        selectedCategory={selectedCategory}
+        selectedDong={selectedDong}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         {restaurants.map((r) => (
@@ -77,7 +82,11 @@ export default async function Home({
       </div>
 
       {restaurants.length === 0 && (
-        <p className="text-center text-zinc-400 py-10">해당 카테고리의 식당이 없습니다.</p>
+        <p className="text-center text-zinc-400 py-10">
+          {selectedDong !== "전체"
+            ? `'${selectedDong}'에 배달 가능한 식당이 없습니다.`
+            : "조건에 맞는 식당이 없습니다."}
+        </p>
       )}
     </div>
   );

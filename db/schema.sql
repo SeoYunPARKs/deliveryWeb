@@ -4,7 +4,8 @@
 --        운영 DB(Neon)에는 최초 1회만 실행한다.
 -- ============================================================
 
-DROP TABLE IF EXISTS reviews     CASCADE;
+DROP TABLE IF EXISTS reviews          CASCADE;
+DROP TABLE IF EXISTS restaurant_areas CASCADE;
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders      CASCADE;
 DROP TABLE IF EXISTS menus       CASCADE;
@@ -29,10 +30,18 @@ CREATE TABLE restaurants (
   category         VARCHAR(50)  NOT NULL,
   description      TEXT,
   image_url        TEXT,
+  address          VARCHAR(255),                -- 가게 주소
   delivery_fee     INTEGER NOT NULL DEFAULT 0,
   min_order_amount INTEGER NOT NULL DEFAULT 0,
   rating           NUMERIC(2,1) NOT NULL DEFAULT 0,
   created_at       TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- 배달 가능 지역 : 식당 1 : N 동(洞)
+CREATE TABLE restaurant_areas (
+  id            SERIAL PRIMARY KEY,
+  restaurant_id INTEGER NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  dong          VARCHAR(50) NOT NULL
 );
 
 -- 메뉴 : 식당 1 : N 메뉴
@@ -87,3 +96,5 @@ CREATE INDEX idx_orders_user        ON orders(user_id);
 CREATE INDEX idx_order_items_order  ON order_items(order_id);
 CREATE INDEX idx_reviews_restaurant ON reviews(restaurant_id);
 CREATE INDEX idx_restaurants_owner  ON restaurants(owner_id);
+CREATE INDEX idx_areas_dong         ON restaurant_areas(dong);
+CREATE INDEX idx_areas_restaurant   ON restaurant_areas(restaurant_id);
