@@ -6,10 +6,18 @@
 
 ## ✨ 필수 기능
 - 회원가입 / 로그인 / 로그아웃 (이메일·비밀번호)
-- 식당·메뉴 목록 (DB 조회) + **카테고리 필터**(가산)
+- 식당·메뉴 목록 (DB 조회) + **카테고리 필터**
 - 장바구니 담기 (수량 조절·삭제)
 - 주문하기 (DB 저장, 트랜잭션)
-- 내 주문 내역 보기 + **주문 상태**(접수/배달중/완료) 표시(가산)
+- 내 주문 내역 보기 + **주문 상태**(접수/배달중/완료) 표시
+
+## ➕ 추가 기능
+- **회원 역할**: 가입 시 손님/사장님 선택 (`users.role`)
+- **입력 검증**: 이메일 형식, 비밀번호 강도(8자+대소문자+특수문자), 연락처 형식
+- **사장님 페이지**: 가게 등록 + 메뉴 등록/삭제 (`/owner`)
+- **리뷰**: 식당별 별점(1~5)+내용 작성/조회
+- **배달/포장 선택**: 포장 시 주소 면제·배달비 0
+- **장바구니 옵션**: 항목별 옵션/요청 편집, "메뉴 더 담기"
 
 ## 🧰 기술 스택
 | 구분 | 사용 |
@@ -28,14 +36,17 @@
 ├─ app/                     # Next.js 앱 (= Vercel 배포 대상)
 │  ├─ page.tsx              # 식당 목록(홈)
 │  ├─ login/ , signup/      # 인증 페이지
-│  ├─ restaurants/[id]/     # 식당 상세 + 메뉴
-│  ├─ cart/                 # 장바구니 + 주문
+│  ├─ restaurants/[id]/     # 식당 상세 + 메뉴 + 리뷰
+│  ├─ cart/                 # 장바구니 + 주문(배달/포장)
 │  ├─ orders/               # 내 주문 내역
+│  ├─ owner/                # 사장님: 대시보드/가게등록/메뉴관리
 │  ├─ api/                  # 백엔드 (Route Handlers)
 │  │  ├─ auth/{signup,login,logout,me}/
+│  │  ├─ restaurants/ , restaurants/[id]/menus/ , menus/[id]/
+│  │  ├─ restaurants/[id]/reviews/
 │  │  └─ orders/            # 주문 생성 (POST)
-│  ├─ lib/                  # db.ts, auth.ts, types.ts, format.ts
-│  └─ components/           # Header, Providers, Cart/Auth Provider, MenuList
+│  ├─ lib/                  # db, auth, validation, types, format
+│  └─ components/           # Header, Providers, Cart/Auth Provider, MenuList, ReviewSection, OwnerMenuManager
 ├─ db/                      # 데이터베이스
 │  ├─ schema.sql            # 테이블 정의
 │  ├─ seed.sql              # 샘플 식당·메뉴
