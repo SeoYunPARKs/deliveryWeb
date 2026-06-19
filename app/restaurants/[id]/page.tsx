@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { query } from "@/app/lib/db";
 import { won } from "@/app/lib/format";
 import { MenuList } from "@/app/components/MenuList";
-import type { Restaurant, Menu } from "@/app/lib/types";
+import { ReviewSection } from "@/app/components/ReviewSection";
+import type { Restaurant, Menu, Review } from "@/app/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,13 @@ export default async function RestaurantPage({
     [restaurantId],
   );
 
+  const reviews = await query<Review>(
+    `SELECT rv.id, u.name AS user_name, rv.rating, rv.content, rv.created_at
+     FROM reviews rv JOIN users u ON u.id = rv.user_id
+     WHERE rv.restaurant_id = $1 ORDER BY rv.id DESC`,
+    [restaurantId],
+  );
+
   return (
     <div>
       <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-800">
@@ -51,6 +59,8 @@ export default async function RestaurantPage({
 
       <h2 className="font-bold mt-6 mb-3">메뉴</h2>
       <MenuList restaurant={restaurant} menus={menus} />
+
+      <ReviewSection restaurantId={restaurant.id} initialReviews={reviews} />
     </div>
   );
 }

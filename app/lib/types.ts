@@ -56,3 +56,11 @@ export type OrderItem = {
 };
 
 export type OrderDetail = OrderSummary & { items: OrderItem[] };
+
+export type Review = {
+  id: number;
+  user_name: string;
+  rating: number;
+  content: string;
+  created_at: string;
+};
