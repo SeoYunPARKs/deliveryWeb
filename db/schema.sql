@@ -4,6 +4,8 @@
 --        운영 DB(Neon)에는 최초 1회만 실행한다.
 -- ============================================================
 
+DROP TABLE IF EXISTS favorites        CASCADE;
+DROP TABLE IF EXISTS user_addresses   CASCADE;
 DROP TABLE IF EXISTS reviews          CASCADE;
 DROP TABLE IF EXISTS restaurant_areas CASCADE;
 DROP TABLE IF EXISTS order_items CASCADE;
@@ -19,6 +21,7 @@ CREATE TABLE users (
   password_hash VARCHAR(255) NOT NULL,          -- bcrypt 해시 (평문 저장 금지)
   name          VARCHAR(100) NOT NULL,
   role          VARCHAR(20)  NOT NULL DEFAULT 'customer', -- customer | owner
+  points        INTEGER      NOT NULL DEFAULT 0,          -- 적립 포인트
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
@@ -90,6 +93,24 @@ CREATE TABLE reviews (
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
+-- 찜한 가게 : 회원 N : N 식당 (한 회원이 같은 가게 중복 찜 방지)
+CREATE TABLE favorites (
+  id            SERIAL PRIMARY KEY,
+  user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  restaurant_id INTEGER NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  UNIQUE (user_id, restaurant_id)
+);
+
+-- 배송지(주소록) : 회원 1 : N 주소
+CREATE TABLE user_addresses (
+  id         SERIAL PRIMARY KEY,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  label      VARCHAR(50),                 -- 집/회사 등
+  address    VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
 -- 자주 조회되는 외래키 인덱스
 CREATE INDEX idx_menus_restaurant   ON menus(restaurant_id);
 CREATE INDEX idx_orders_user        ON orders(user_id);
@@ -98,3 +119,5 @@ CREATE INDEX idx_reviews_restaurant ON reviews(restaurant_id);
 CREATE INDEX idx_restaurants_owner  ON restaurants(owner_id);
 CREATE INDEX idx_areas_dong         ON restaurant_areas(dong);
 CREATE INDEX idx_areas_restaurant   ON restaurant_areas(restaurant_id);
+CREATE INDEX idx_favorites_user     ON favorites(user_id);
+CREATE INDEX idx_addresses_user     ON user_addresses(user_id);

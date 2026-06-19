@@ -5,6 +5,7 @@ import { getSessionUser } from "@/app/lib/auth";
 import { won } from "@/app/lib/format";
 import { MenuList } from "@/app/components/MenuList";
 import { ReviewSection } from "@/app/components/ReviewSection";
+import { FavoriteButton } from "@/app/components/FavoriteButton";
 import type { Restaurant, Menu, Review } from "@/app/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -46,12 +47,18 @@ export default async function RestaurantPage({
 
   // 리뷰 작성 권한: 로그인 + 이 식당 주문 이력 있음
   let canReview = false;
+  let favorited = false;
   if (sessionUser) {
     const ordered = await query(
       "SELECT 1 FROM orders WHERE user_id = $1 AND restaurant_id = $2 LIMIT 1",
       [sessionUser.id, restaurantId],
     );
     canReview = ordered.length > 0;
+    const fav = await query(
+      "SELECT 1 FROM favorites WHERE user_id = $1 AND restaurant_id = $2 LIMIT 1",
+      [sessionUser.id, restaurantId],
+    );
+    favorited = fav.length > 0;
   }
 
   return (
@@ -62,7 +69,7 @@ export default async function RestaurantPage({
 
       <div className="bg-white rounded-xl border border-zinc-200 p-5 mt-3 flex gap-4 items-center">
         <div className="text-5xl shrink-0">{restaurant.image_url ?? "🍽️"}</div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold">{restaurant.name}</h1>
           <p className="text-sm text-zinc-400">
             {restaurant.category} · ⭐ {restaurant.rating.toFixed(1)}
@@ -75,6 +82,7 @@ export default async function RestaurantPage({
             배달비 {won(restaurant.delivery_fee)} · 최소주문 {won(restaurant.min_order_amount)}
           </p>
         </div>
+        <FavoriteButton restaurantId={restaurant.id} initialFavorited={favorited} />
       </div>
 
       <h2 className="font-bold mt-6 mb-3">메뉴</h2>

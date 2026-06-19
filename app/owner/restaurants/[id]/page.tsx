@@ -3,6 +3,7 @@ import { getSessionUser } from "@/app/lib/auth";
 import { query } from "@/app/lib/db";
 import { won } from "@/app/lib/format";
 import { OwnerMenuManager } from "@/app/components/OwnerMenuManager";
+import { OwnerOrders } from "@/app/components/OwnerOrders";
 import type { Restaurant, Menu } from "@/app/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +45,22 @@ export default async function OwnerRestaurantPage({
     [restaurantId],
   );
 
+  const orders = await query<{
+    id: number;
+    created_at: string;
+    total_amount: number;
+    order_type: string;
+    status: string;
+    address: string;
+    items: string | null;
+  }>(
+    `SELECT o.id, o.created_at, o.total_amount, o.order_type, o.status, o.address,
+            (SELECT string_agg(oi.menu_name || ' x' || oi.quantity, ', ')
+             FROM order_items oi WHERE oi.order_id = o.id) AS items
+     FROM orders o WHERE o.restaurant_id = $1 ORDER BY o.id DESC`,
+    [restaurantId],
+  );
+
   return (
     <div>
       <Link href="/owner" className="text-sm text-zinc-500 hover:text-zinc-800">
@@ -65,6 +82,9 @@ export default async function OwnerRestaurantPage({
           손님 화면 보기 →
         </Link>
       </div>
+
+      <h2 className="font-bold mt-6 mb-3">주문 관리</h2>
+      <OwnerOrders initial={orders} />
 
       <h2 className="font-bold mt-6 mb-3">메뉴 관리</h2>
       <OwnerMenuManager restaurantId={restaurant.id} initialMenus={menus} />

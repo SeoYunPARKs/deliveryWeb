@@ -106,8 +106,15 @@ export async function POST(req: Request) {
       );
     }
 
+    // 결제금액의 1% 포인트 적립
+    const earnedPoints = Math.floor(totalAmount * 0.01);
+    await client.query("UPDATE users SET points = points + $1 WHERE id = $2", [
+      earnedPoints,
+      user.id,
+    ]);
+
     await client.query("COMMIT");
-    return NextResponse.json({ orderId });
+    return NextResponse.json({ orderId, earnedPoints });
   } catch (err) {
     await client.query("ROLLBACK");
     console.error("주문 처리 오류:", err);

@@ -45,7 +45,12 @@ export function Header() {
                   사장님
                 </Link>
               )}
-              <span className="text-zinc-500 hidden sm:inline">{user.name}님</span>
+              <Link
+                href="/mypage"
+                className="text-zinc-700 font-medium hover:text-teal-600 px-1"
+              >
+                {user.name}님
+              </Link>
               <button
                 onClick={handleLogout}
                 className="rounded-md bg-zinc-100 px-3 py-1.5 hover:bg-zinc-200"
