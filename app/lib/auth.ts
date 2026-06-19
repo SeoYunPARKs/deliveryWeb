@@ -18,7 +18,7 @@ export async function verifyPassword(plain: string, hash: string): Promise<boole
 
 // 로그인 성공 시 JWT 를 httpOnly 쿠키로 발급 (서버리스용 stateless 세션)
 export async function createSession(user: SessionUser): Promise<void> {
-  const token = await new SignJWT({ email: user.email, name: user.name })
+  const token = await new SignJWT({ email: user.email, name: user.name, role: user.role })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(String(user.id))
     .setIssuedAt()
@@ -46,6 +46,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       id: Number(payload.sub),
       email: String(payload.email ?? ""),
       name: String(payload.name ?? ""),
+      role: payload.role === "owner" ? "owner" : "customer",
     };
   } catch {
     return null;

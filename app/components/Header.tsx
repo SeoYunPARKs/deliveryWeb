@@ -37,6 +37,14 @@ export function Header() {
           </Link>
           {loading ? null : user ? (
             <>
+              {user.role === "owner" && (
+                <Link
+                  href="/owner"
+                  className="text-zinc-600 hover:text-zinc-900 px-2 py-1"
+                >
+                  사장님
+                </Link>
+              )}
               <span className="text-zinc-500 hidden sm:inline">{user.name}님</span>
               <button
                 onClick={handleLogout}

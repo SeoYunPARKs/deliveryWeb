@@ -1,4 +1,11 @@
-export type SessionUser = { id: number; email: string; name: string };
+export type UserRole = "customer" | "owner";
+
+export type SessionUser = {
+  id: number;
+  email: string;
+  name: string;
+  role: UserRole;
+};
 
 export type Restaurant = {
   id: number;
