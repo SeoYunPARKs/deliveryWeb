@@ -65,7 +65,7 @@ CREATE TABLE orders (
   restaurant_id INTEGER NOT NULL REFERENCES restaurants(id),
   order_type    VARCHAR(10)  NOT NULL DEFAULT 'delivery', -- delivery | takeout
   total_amount  INTEGER NOT NULL,
-  status        VARCHAR(20)  NOT NULL DEFAULT 'received',  -- received | delivering | completed
+  status        VARCHAR(20)  NOT NULL DEFAULT 'pending',  -- pending | received | delivering | completed
   address       VARCHAR(255) NOT NULL,
   phone         VARCHAR(30)  NOT NULL,                     -- 연락처 필수
   request       VARCHAR(50),                               -- 요청사항 (최대 50자)

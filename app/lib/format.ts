@@ -6,6 +6,8 @@ export function won(amount: number): string {
 // 주문 상태 한글 라벨
 export function statusLabel(status: string): string {
   switch (status) {
+    case "pending":
+      return "접수 대기";
     case "received":
       return "접수";
     case "delivering":

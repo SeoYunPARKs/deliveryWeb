@@ -93,7 +93,7 @@ export async function POST(req: Request) {
     const orderId = (
       await client.query(
         `INSERT INTO orders (user_id, restaurant_id, order_type, total_amount, status, address, phone, request)
-         VALUES ($1, $2, $3, $4, 'received', $5, $6, $7) RETURNING id`,
+         VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7) RETURNING id`,
         [user.id, restaurantId, orderType, totalAmount, finalAddress, phone, requestText || null],
       )
     ).rows[0].id;
