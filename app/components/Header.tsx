@@ -7,12 +7,13 @@ import { useCart } from "@/app/components/CartProvider";
 
 export function Header() {
   const { user, loading, setUser } = useAuth();
-  const { itemCount, hydrated } = useCart();
+  const { itemCount, hydrated, clearCart } = useCart();
   const router = useRouter();
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
+    clearCart(); // 로그아웃 시 장바구니 비우기
     router.push("/");
     router.refresh();
   }
