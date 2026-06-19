@@ -32,9 +32,6 @@ export async function POST(req: Request) {
   if (orderType === "delivery" && !address) {
     return NextResponse.json({ error: "배달 주소를 입력하세요." }, { status: 400 });
   }
-  if (orderType === "delivery" && !requestText) {
-    return NextResponse.json({ error: "배달 요청사항을 입력하세요." }, { status: 400 });
-  }
   const finalAddress = orderType === "takeout" ? address || "매장 픽업" : address;
 
   const client = await pool.connect();

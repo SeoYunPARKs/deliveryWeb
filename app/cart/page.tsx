@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/app/components/CartProvider";
 import { useAuth } from "@/app/components/AuthProvider";
 import { won } from "@/app/lib/format";
-import { validatePhone } from "@/app/lib/validation";
+import { validatePhone, formatPhone } from "@/app/lib/validation";
 import type { OrderType } from "@/app/lib/types";
 
 export default function CartPage() {
@@ -59,9 +59,6 @@ export default function CartPage() {
     }
     const phoneError = validatePhone(phone);
     if (phoneError) return setError(phoneError);
-    if (orderType === "delivery" && !request.trim()) {
-      return setError("배달 요청사항을 입력하세요.");
-    }
 
     setSubmitting(true);
     try {
@@ -214,15 +211,16 @@ export default function CartPage() {
               <label className="block text-sm text-zinc-600 mb-1">연락처 *</label>
               <input
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(formatPhone(e.target.value))}
+                inputMode="numeric"
                 placeholder="010-1234-5678"
                 className="w-full rounded-md border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
             <div>
               <label className="block text-sm text-zinc-600 mb-1">
-                {orderType === "delivery" ? "배달기사님께 요청사항 * " : "요청사항 "}
-                <span className="text-zinc-400">({request.length}/50)</span>
+                {orderType === "delivery" ? "배달기사님께 요청사항 " : "요청사항 "}
+                <span className="text-zinc-400">(선택, {request.length}/50)</span>
               </label>
               <textarea
                 value={request}

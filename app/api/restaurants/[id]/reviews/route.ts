@@ -29,6 +29,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: "식당을 찾을 수 없습니다." }, { status: 404 });
   }
 
+  // 이 식당에서 주문한 이력이 있는 사람만 리뷰 작성 가능
+  const ordered = await query(
+    "SELECT 1 FROM orders WHERE user_id = $1 AND restaurant_id = $2 LIMIT 1",
+    [user.id, restaurantId],
+  );
+  if (ordered.length === 0) {
+    return NextResponse.json(
+      { error: "이 식당에서 주문한 내역이 있어야 리뷰를 쓸 수 있어요." },
+      { status: 403 },
+    );
+  }
+
   const rows = await query<{ id: number; rating: number; content: string; created_at: string }>(
     `INSERT INTO reviews (restaurant_id, user_id, rating, content)
      VALUES ($1, $2, $3, $4)
@@ -36,5 +48,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     [restaurantId, user.id, r, content.trim()],
   );
 
-  return NextResponse.json({ review: { ...rows[0], user_name: user.name } });
+  return NextResponse.json({ review: { ...rows[0], user_name: user.name, user_id: user.id } });
 }

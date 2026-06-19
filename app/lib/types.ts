@@ -13,6 +13,8 @@ export type Restaurant = {
   category: string;
   description: string | null;
   image_url: string | null;
+  address?: string | null;
+  owner_id?: number | null;
   delivery_fee: number;
   min_order_amount: number;
   rating: number;
@@ -65,6 +67,7 @@ export type OrderDetail = OrderSummary & { items: OrderItem[] };
 
 export type Review = {
   id: number;
+  user_id: number;
   user_name: string;
   rating: number;
   content: string;

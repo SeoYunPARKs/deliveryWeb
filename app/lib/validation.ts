@@ -25,3 +25,11 @@ export function validatePhone(phone: string): string | null {
     return "올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)";
   return null;
 }
+
+// 입력 중 자동으로 하이픈 삽입: 01012345678 → 010-1234-5678
+export function formatPhone(value: string): string {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  if (d.length < 4) return d;
+  if (d.length < 8) return `${d.slice(0, 3)}-${d.slice(3)}`;
+  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+}
