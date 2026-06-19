@@ -34,6 +34,7 @@ type CartContextValue = CartState & {
   increment: (menuId: number) => void;
   decrement: (menuId: number) => void;
   removeItem: (menuId: number) => void;
+  updateOptions: (menuId: number, options: string) => void;
   clearCart: () => void;
 };
 
@@ -131,6 +132,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const updateOptions = useCallback((menuId: number, options: string) => {
+    setState((p) => ({
+      ...p,
+      items: p.items.map((i) => (i.menuId === menuId ? { ...i, options } : i)),
+    }));
+  }, []);
+
   const clearCart = useCallback(() => setState(EMPTY), []);
 
   const itemCount = state.items.reduce((s, i) => s + i.quantity, 0);
@@ -149,6 +157,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         increment,
         decrement,
         removeItem,
+        updateOptions,
         clearCart,
       }}
     >

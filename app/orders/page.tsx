@@ -24,8 +24,8 @@ export default async function OrdersPage() {
 
   // 주문(헤더) 목록 + 메뉴 개수
   const orders = await query<OrderSummary>(
-    `SELECT o.id, o.restaurant_id, r.name AS restaurant_name,
-            o.total_amount, o.status, o.address, o.created_at,
+    `SELECT o.id, o.restaurant_id, r.name AS restaurant_name, o.order_type,
+            o.total_amount, o.status, o.address, o.request, o.created_at,
             (SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.id)::int AS item_count
      FROM orders o
      JOIN restaurants r ON r.id = o.restaurant_id
@@ -39,7 +39,7 @@ export default async function OrdersPage() {
   const itemsByOrder = new Map<number, OrderItem[]>();
   if (orderIds.length > 0) {
     const items = await query<OrderItem & { order_id: number }>(
-      `SELECT order_id, menu_name, unit_price, quantity
+      `SELECT order_id, menu_name, unit_price, quantity, options
        FROM order_items WHERE order_id = ANY($1::int[]) ORDER BY id`,
       [orderIds],
     );
@@ -78,9 +78,14 @@ export default async function OrdersPage() {
               >
                 {o.restaurant_name}
               </Link>
-              <span className="text-xs rounded-full bg-teal-50 text-teal-700 px-2 py-0.5">
-                {statusLabel(o.status)}
-              </span>
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="text-xs rounded-full bg-zinc-100 text-zinc-600 px-2 py-0.5">
+                  {o.order_type === "takeout" ? "🥡 포장" : "🛵 배달"}
+                </span>
+                <span className="text-xs rounded-full bg-teal-50 text-teal-700 px-2 py-0.5">
+                  {statusLabel(o.status)}
+                </span>
+              </div>
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
               {new Date(o.created_at).toLocaleString("ko-KR", {
@@ -90,16 +95,23 @@ export default async function OrdersPage() {
               · 주문번호 #{o.id}
             </p>
 
-            <ul className="mt-3 space-y-0.5 text-sm text-zinc-600">
+            <ul className="mt-3 space-y-1 text-sm text-zinc-600">
               {(itemsByOrder.get(o.id) ?? []).map((it, idx) => (
-                <li key={idx} className="flex justify-between">
-                  <span>
+                <li key={idx} className="flex justify-between gap-2">
+                  <span className="min-w-0">
                     {it.menu_name} × {it.quantity}
+                    {it.options ? (
+                      <span className="block text-xs text-zinc-400">└ {it.options}</span>
+                    ) : null}
                   </span>
-                  <span>{won(it.unit_price * it.quantity)}</span>
+                  <span className="shrink-0">{won(it.unit_price * it.quantity)}</span>
                 </li>
               ))}
             </ul>
+
+            {o.request ? (
+              <p className="text-xs text-zinc-500 mt-2">📝 {o.request}</p>
+            ) : null}
 
             <div className="flex justify-between items-center mt-3 pt-3 border-t border-zinc-100">
               <span className="text-xs text-zinc-400 truncate max-w-[60%]">
