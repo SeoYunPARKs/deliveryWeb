@@ -1,14 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/app/components/CartProvider";
+import { useAuth } from "@/app/components/AuthProvider";
 import { won } from "@/app/lib/format";
 
 export default function CartPage() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
   const {
+    restaurantId,
+    restaurantName,
     items,
     hydrated,
-    restaurantName,
     subtotal,
     deliveryFee,
     total,
@@ -18,6 +24,11 @@ export default function CartPage() {
     removeItem,
     clearCart,
   } = useCart();
+
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   if (!hydrated) return null;
 
@@ -37,6 +48,39 @@ export default function CartPage() {
   }
 
   const belowMin = subtotal < minOrderAmount;
+
+  async function handleOrder() {
+    setError("");
+    if (!address.trim()) {
+      setError("배달 주소를 입력하세요.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantId,
+          address: address.trim(),
+          phone: phone.trim() || null,
+          items: items.map((i) => ({ menuId: i.menuId, quantity: i.quantity })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "주문에 실패했습니다.");
+        return;
+      }
+      clearCart();
+      router.push("/orders");
+      router.refresh();
+    } catch {
+      setError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div>
@@ -110,6 +154,49 @@ export default function CartPage() {
           최소주문금액 {won(minOrderAmount)} 이상부터 주문할 수 있어요. (현재 {won(subtotal)})
         </p>
       )}
+
+      {/* 주문 (체크아웃) */}
+      <div className="bg-white rounded-lg border border-zinc-200 p-4 mt-4">
+        <h2 className="font-semibold mb-3">배달 정보</h2>
+        {loading ? null : !user ? (
+          <p className="text-sm text-zinc-600">
+            주문하려면{" "}
+            <Link href="/login" className="text-teal-600 font-medium">
+              로그인
+            </Link>
+            이 필요합니다.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm text-zinc-600 mb-1">배달 주소</label>
+              <input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="서울시 ○○구 ○○로 12, 3층"
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-zinc-600 mb-1">연락처 (선택)</label>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="010-1234-5678"
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <button
+              onClick={handleOrder}
+              disabled={submitting || belowMin}
+              className="w-full rounded-md bg-teal-600 text-white py-2.5 font-medium hover:bg-teal-700 disabled:opacity-50"
+            >
+              {submitting ? "주문 중..." : `${won(total)} 주문하기`}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
