@@ -74,6 +74,11 @@ erDiagram
 | **orders** | **주문 헤더.** 한 번의 주문 = 1행. 누가·어디서·**배달/포장**·총액·상태·주소·연락처·요청사항. |
 | **order_items** | **주문 상세.** 그 주문의 메뉴를 줄 단위로. 이름·단가·**옵션**을 주문시점 값으로 스냅샷. |
 | **reviews** | 리뷰. 손님이 식당에 남긴 별점(1~5)+내용. |
+| **restaurant_areas** | 식당이 배달 가능한 동(洞) 목록 (식당 1:N 동). |
+| **favorites** | 찜한 가게 (회원 N:N 식당, 같은 가게 중복 찜 방지). |
+| **user_addresses** | 회원 배송지 주소록 (회원 1:N 주소). |
+
+> 이후 추가된 컬럼: `users.points`(포인트), `users.role`(손님/사장님), `restaurants.address`(주소)·`owner_id`(사장님), `orders.order_type`(배달/포장)·`request`(요청), `order_items.options`(옵션).
 
 ## 3. ★ 왜 이렇게 나눴나 (핵심)
 
